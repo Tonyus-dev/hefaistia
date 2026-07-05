@@ -1,0 +1,9 @@
+#!/bin/sh
+# prerm do pacote .deb experimental. Não para serviço automaticamente —
+# só orienta, para nunca interromper algo que o usuário não pediu.
+set -e
+
+echo "Removendo Klio Hefaístia."
+echo "Se o serviço --user estiver ativo, pare-o antes: systemctl --user stop klio-hefaistia"
+
+exit 0

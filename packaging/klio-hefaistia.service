@@ -1,0 +1,14 @@
+[Unit]
+Description=Klio Hefaístia local runtime
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=__APP_DIR__
+ExecStart=/usr/bin/env node __APP_DIR__/server/hefaistia.mjs
+Restart=on-failure
+Environment=KLIO_HOST=127.0.0.1
+Environment=KLIO_PORT=4518
+
+[Install]
+WantedBy=default.target

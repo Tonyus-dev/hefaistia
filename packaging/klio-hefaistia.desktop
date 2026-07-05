@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Klio Hefaístia
+Comment=Console Visual da Forja — worker local de IA da Kaline
+Exec=xdg-open __CONSOLE_URL__
+Icon=__ICON_PATH__
+Terminal=false
+Categories=Development;Utility;
+StartupNotify=false
