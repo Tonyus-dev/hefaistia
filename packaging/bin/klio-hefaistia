@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+URL="http://127.0.0.1:4518"
+HEALTH="$URL/api/health"
+APP_DIR="/opt/klio-hefaistia"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/klio-hefaistia"
+PID_FILE="$STATE_DIR/runtime.pid"
+LOG_FILE="$STATE_DIR/runtime.log"
+
+mkdir -p "$STATE_DIR"
+
+is_running() {
+  curl -fsS --max-time 2 "$HEALTH" >/dev/null 2>&1
+}
+
+start_runtime() {
+  if is_running; then
+    return 0
+  fi
+
+  echo "Iniciando Klio Hefaístia..."
+  (
+    cd "$APP_DIR"
+    KLIO_HOST=127.0.0.1 \
+    KLIO_PORT=4518 \
+    NODE_ENV=production \
+    nohup /usr/bin/node "$APP_DIR/server/hefaistia.mjs" >>"$LOG_FILE" 2>&1 &
+    echo $! > "$PID_FILE"
+  )
+
+  for _ in $(seq 1 20); do
+    if is_running; then
+      return 0
+    fi
+    sleep 0.5
+  done
+
+  echo "A Hefaístia não respondeu em $HEALTH."
+  echo "Veja os logs em: $LOG_FILE"
+  return 1
+}
+
+open_app() {
+  if command -v google-chrome >/dev/null 2>&1; then
+    exec google-chrome --app="$URL"
+  elif command -v chromium >/dev/null 2>&1; then
+    exec chromium --app="$URL"
+  elif command -v chromium-browser >/dev/null 2>&1; then
+    exec chromium-browser --app="$URL"
+  elif command -v brave-browser >/dev/null 2>&1; then
+    exec brave-browser --app="$URL"
+  elif command -v microsoft-edge >/dev/null 2>&1; then
+    exec microsoft-edge --app="$URL"
+  else
+    exec xdg-open "$URL"
+  fi
+}
+
+start_runtime
+open_app

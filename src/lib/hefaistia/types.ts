@@ -74,11 +74,7 @@ export interface HefaistiaErrorResponse {
 // --- PR 3: Klio Local + Kaline Fallback + export diário ---------------------
 
 export type KlioChatMode =
-  | "operational"
-  | "explain_error"
-  | "prepare_prompt"
-  | "review_next_step"
-  | "terminal_guide";
+  "operational" | "explain_error" | "prepare_prompt" | "review_next_step" | "terminal_guide";
 
 export interface KlioChatRequest {
   message: string;

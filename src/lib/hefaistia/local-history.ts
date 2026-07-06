@@ -4,11 +4,7 @@
 import { HEFAISTIA_STORAGE_KEYS } from "./config";
 
 export type HefaistiaHistoryMode =
-  | "klio-local"
-  | "kaline-fallback"
-  | "route-task"
-  | "benchmark"
-  | "daily-export";
+  "klio-local" | "kaline-fallback" | "route-task" | "benchmark" | "daily-export";
 
 export interface HefaistiaHistoryItem {
   id: string;

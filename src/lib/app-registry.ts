@@ -26,13 +26,7 @@ export type AccessFacet = "kaline" | "kharis" | "kuanyin" | "drive" | "klio";
 export type EngineFacet = "kaline" | "kharis" | "kuanyin";
 export type AppRole = "admin" | "user" | "guardian";
 export type AppMode =
-  | "personal"
-  | "care"
-  | "commercial"
-  | "pedagogical"
-  | "mobility"
-  | "memory"
-  | "system";
+  "personal" | "care" | "commercial" | "pedagogical" | "mobility" | "memory" | "system";
 
 export type AppRegistryItem = {
   id: string;

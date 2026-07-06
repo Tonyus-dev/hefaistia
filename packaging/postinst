@@ -1,29 +1,17 @@
 #!/bin/sh
-# postinst do pacote .deb experimental. Não baixa nada, não habilita
-# serviço automaticamente, não toca em rede — só orienta os próximos
-# passos manuais.
 set -e
 
-echo ""
-echo "Klio Hefaístia runtime instalado em /opt/klio-hefaistia (pacote experimental)."
-echo ""
-echo "Este pacote é runtime-only:"
-echo "  - inclui server/, knowledge/ e docs/"
-echo "  - NÃO inclui o Console Visual/frontend"
-echo "  - NÃO cria atalho de menu para a UI"
-echo "  - NÃO habilita serviço automaticamente"
-echo ""
-echo "Para iniciar manualmente o runtime:"
-echo "  cd /opt/klio-hefaistia"
-echo "  node server/hefaistia.mjs"
-echo ""
-echo "Serviço systemd --user opcional:"
-echo "  systemctl --user daemon-reload"
-echo "  systemctl --user start klio-hefaistia"
-echo "  systemctl --user enable klio-hefaistia   # opcional"
-echo ""
-echo "O Console Visual da Forja ainda roda pelo clone/PWA com 'bun run dev'."
-echo "Nada foi habilitado como serviço automaticamente. Nenhuma porta LAN foi aberta."
-echo ""
+gtk-update-icon-cache -q /usr/share/icons/hicolor || true
+update-desktop-database /usr/share/applications || true
 
-exit 0
+echo ""
+echo "Klio Hefaístia instalada."
+echo "Abra pelo menu: Klio Hefaístia"
+echo "Ou rode: klio-hefaistia"
+echo ""
+echo "Status: klio-hefaistia-status"
+echo "Parar runtime iniciado pelo launcher: klio-hefaistia-stop"
+echo ""
+echo "Acesso local: http://127.0.0.1:4518"
+echo "Nenhuma porta LAN foi aberta."
+echo ""

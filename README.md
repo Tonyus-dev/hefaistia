@@ -114,7 +114,7 @@ bun run hefaistia
 → console visual e API em http://127.0.0.1:4518
 
 modo .deb:
-runtime-only experimental
+.deb instalável local com runtime + console visual buildado + launcher de menu
 ```
 
 No modo dev, o frontend (`bun run dev`) e o runtime da Hefaístia (`bun run hefaistia`)
@@ -560,18 +560,62 @@ systemctl --user enable klio-hefaistia  # opcional: inicia com a sessão
 systemctl --user stop klio-hefaistia    # para
 ```
 
-### `.deb` experimental
+### `.deb` instalável local com runtime + console visual buildado + launcher de menu
 
 ```bash
 bash scripts/build-deb.sh            # gera dist-deb/klio-hefaistia_0.1.0_all.deb
 sudo dpkg -i dist-deb/klio-hefaistia_0.1.0_all.deb   # instalação manual, fora deste repo
 ```
 
-Limitações honestas do `.deb`: empacota só o **runtime** (`server/` + `knowledge/`);
-não inclui `node_modules` (o `postinst` orienta a rodar `npm install`/`bun install`
-manualmente); não inclui o frontend/console visual, que continua rodando via
-`bun run dev` a partir de um clone; não habilita o serviço `systemd --user`
-automaticamente. É um ponto de partida, não um instalador finalizado.
+## Instalar como app no Linux Mint Xfce
+
+Gerar pacote:
+
+```bash
+bash scripts/build-deb.sh
+```
+
+Instalar:
+
+```bash
+sudo apt install ./dist-deb/klio-hefaistia_0.1.0_all.deb
+```
+
+Abrir:
+
+```txt
+Menu → Klio Hefaístia
+```
+
+Ou:
+
+```bash
+klio-hefaistia
+```
+
+Status:
+
+```bash
+klio-hefaistia-status
+```
+
+Parar runtime iniciado pelo launcher:
+
+```bash
+klio-hefaistia-stop
+```
+
+Logs locais:
+
+```txt
+~/.local/state/klio-hefaistia/runtime.log
+```
+
+Remover:
+
+```bash
+sudo apt remove klio-hefaistia
+```
 
 ### Ícones
 

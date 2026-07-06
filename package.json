@@ -1,5 +1,6 @@
 {
   "name": "klio-hefaistia",
+  "version": "0.1.0",
   "private": true,
   "packageManager": "bun@1.2.14",
   "sideEffects": false,

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+URL="http://127.0.0.1:4518/api/health"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/klio-hefaistia"
+LOG_FILE="$STATE_DIR/runtime.log"
+
+if curl -fsS --max-time 2 "$URL" >/dev/null 2>&1; then
+  echo "Klio Hefaístia está online e rodando em 127.0.0.1:4518"
+else
+  echo "Klio Hefaístia está offline."
+  if [ -f "$LOG_FILE" ]; then
+    echo "Logs disponíveis em: $LOG_FILE"
+  else
+    echo "Nenhum log encontrado em: $LOG_FILE"
+  fi
+fi
