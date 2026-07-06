@@ -631,6 +631,13 @@ Remover:
 sudo apt remove klio-hefaistia
 ```
 
+## Validação da instalação
+
+Para validar a instalação real do `.deb` no Linux Mint Xfce, siga:
+
+* [Installation Smoke Test](./docs/INSTALL_SMOKE_TEST.md)
+* [Release Notes 0.1.0](./docs/RELEASE_0.1.0.md)
+
 ## Dados locais
 
 A Hefaístia não grava dados do usuário em `/opt`.
@@ -818,6 +825,14 @@ bun run hefaistia
   `/api/route-task`, `/api/models/pull`, `/api/context/export-daily`) quebrou.
 - `package.json` não perdeu nenhuma dependência que ainda esteja em uso — só as
   20 confirmadas mortas por busca de uso real.
+
+## Diagnóstico local
+
+A Hefaístia possui uma seção “Estado da Forja” para listar o funcionamento dos sistemas locais.
+
+Ela mostra estados honestos de runtime, API, token local, diretórios XDG, sessões, knowledge, Ollama, modelos, fallback, exportação manual, Tailnet e segurança de rede.
+
+A tela não executa comandos do sistema, não lê segredos, não mostra tokens e não configura Tailscale automaticamente.
 
 ## Desenvolvimento
 

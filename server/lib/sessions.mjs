@@ -66,3 +66,14 @@ export async function createSession({ title } = {}) {
 
   return { folder: folderName, path: `sessions/${folderName}`, metadata };
 }
+
+export async function getSessionsStatus() {
+  try {
+    await fs.mkdir(SESSIONS_DIR, { recursive: true });
+    const entries = await fs.readdir(SESSIONS_DIR, { withFileTypes: true });
+    const count = entries.filter((e) => e.isDirectory()).length;
+    return { ok: true, sessionsDir: SESSIONS_DIR, count };
+  } catch (err) {
+    return { ok: false, sessionsDir: SESSIONS_DIR, count: 0, error: err.message };
+  }
+}

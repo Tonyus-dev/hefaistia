@@ -43,7 +43,8 @@ import { KLIO_CHAT_MODES, callKlioLocal } from "./lib/klio-local.mjs";
 import { callKalineFallback, isKalineFallbackConfigured } from "./lib/kaline-fallback.mjs";
 import { decideRoute } from "./lib/task-router.mjs";
 import { buildDailyExportMarkdown, buildTotalidadeExportMarkdown } from "./lib/daily-export.mjs";
-import { createSession } from "./lib/sessions.mjs";
+import { createSession, getSessionsStatus } from "./lib/sessions.mjs";
+import { getConfigDir, getDataDir, getStateDir } from "./lib/xdg.mjs";
 
 enforceLanSafety();
 
@@ -652,6 +653,25 @@ async function handleCreateSession(req, res) {
   }
 }
 
+async function handleSystemPaths(req, res) {
+  sendJson(res, 200, {
+    ok: true,
+    configDir: getConfigDir(),
+    dataDir: getDataDir(),
+    stateDir: getStateDir(),
+    sessionsDir: path.join(getDataDir(), "sessions"),
+  });
+}
+
+async function handleSessionsStatus(req, res) {
+  try {
+    const status = await getSessionsStatus();
+    sendJson(res, 200, status);
+  } catch (err) {
+    sendJson(res, 500, errorPayload("INTERNAL_ERROR", "Erro ao obter status das sessões."));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Roteamento
 // ---------------------------------------------------------------------------
@@ -670,6 +690,8 @@ const ROUTES = [
   { method: "POST", path: "/api/context/export-daily", handler: handleExportDaily },
   { method: "POST", path: "/api/context/export-totalidade", handler: handleExportTotalidade },
   { method: "POST", path: "/api/sessions", handler: handleCreateSession },
+  { method: "GET", path: "/api/system/paths", handler: handleSystemPaths },
+  { method: "GET", path: "/api/sessions/status", handler: handleSessionsStatus },
 ];
 
 const server = http.createServer(async (req, res) => {

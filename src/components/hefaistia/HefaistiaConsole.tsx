@@ -10,6 +10,7 @@ import { ModelPanel } from "@/components/hefaistia/ModelPanel";
 import { SessionPanel } from "@/components/hefaistia/SessionPanel";
 import { SettingsPanel } from "@/components/hefaistia/SettingsPanel";
 import { StatusPanel } from "@/components/hefaistia/StatusPanel";
+import { SystemMapPanel } from "@/components/hefaistia/SystemMapPanel";
 import {
   createHefaistiaClient,
   isHefaistiaError,
@@ -152,6 +153,12 @@ export function HefaistiaConsole() {
               knowledgeCount={
                 !isHefaistiaError(knowledge) && knowledge ? knowledge.items.length : null
               }
+              selectedModel={selectedModel}
+            />
+            <SystemMapPanel
+              client={client}
+              apiUrl={apiUrl}
+              token={token}
               selectedModel={selectedModel}
             />
             <SessionPanel client={client} />

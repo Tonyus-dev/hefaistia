@@ -21,6 +21,8 @@ import type {
   RouteTaskResult,
   TotalidadeExportRequest,
   TotalidadeExportResult,
+  SystemPaths,
+  SessionsStatus,
 } from "./types";
 
 export interface HefaistiaClientConfig {
@@ -187,6 +189,10 @@ export function createHefaistiaClient(config: HefaistiaClientConfig) {
         method: "POST",
         body: input,
       }),
+
+    getSystemPaths: () => request<SystemPaths>(config, "/api/system/paths"),
+
+    getSessionsStatus: () => request<SessionsStatus>(config, "/api/sessions/status"),
   };
 }
 

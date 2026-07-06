@@ -223,3 +223,17 @@ export interface CreateSessionResult {
     folder: string;
   };
 }
+
+export interface SystemPaths {
+  ok: true;
+  configDir: string;
+  dataDir: string;
+  stateDir: string;
+  sessionsDir: string;
+}
+
+export interface SessionsStatus {
+  ok: boolean;
+  sessionsDir: string;
+  count: number;
+}
