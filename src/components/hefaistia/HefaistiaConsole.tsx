@@ -45,9 +45,17 @@ export function HefaistiaConsole() {
   const [apiUrl, setApiUrl] = useState(() =>
     readStorage(HEFAISTIA_STORAGE_KEYS.apiUrl, HEFAISTIA_API_URL),
   );
-  const [token, setToken] = useState(() =>
-    readStorage(HEFAISTIA_STORAGE_KEYS.token, DEFAULT_KLIO_TOKEN),
-  );
+  const [token, setToken] = useState(() => {
+    if (typeof window !== "undefined" && window.location.hash.startsWith("#token=")) {
+      const parsedToken = window.location.hash.slice("#token=".length);
+      if (parsedToken) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        window.localStorage.setItem(HEFAISTIA_STORAGE_KEYS.token, parsedToken);
+        return parsedToken;
+      }
+    }
+    return readStorage(HEFAISTIA_STORAGE_KEYS.token, DEFAULT_KLIO_TOKEN);
+  });
   const [selectedModel, setSelectedModel] = useState(() =>
     readStorage(HEFAISTIA_STORAGE_KEYS.selectedModel, ""),
   );

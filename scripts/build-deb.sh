@@ -63,6 +63,7 @@ echo "-- copiando scripts executáveis --"
 cp "$REPO_DIR/packaging/bin/klio-hefaistia" "$STAGE_DIR/usr/bin/klio-hefaistia"
 cp "$REPO_DIR/packaging/bin/klio-hefaistia-status" "$STAGE_DIR/usr/bin/klio-hefaistia-status"
 cp "$REPO_DIR/packaging/bin/klio-hefaistia-stop" "$STAGE_DIR/usr/bin/klio-hefaistia-stop"
+cp "$REPO_DIR/packaging/bin/klio-hefaistia-tailnet" "$STAGE_DIR/usr/bin/klio-hefaistia-tailnet"
 chmod 755 "$STAGE_DIR/usr/bin/"*
 
 echo "-- copiando desktop e ícones --"

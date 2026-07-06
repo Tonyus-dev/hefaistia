@@ -2,9 +2,11 @@
 // de ambiente, com fallback seguro. Nenhum valor aqui é secreto exceto
 // OPENROUTER_API_KEY, que nunca deve ser logado ou devolvido em resposta.
 
+import { getRuntimeToken } from "./local-config.mjs";
+
 export const KLIO_HOST = process.env.KLIO_HOST || "127.0.0.1";
 export const KLIO_PORT = Number.parseInt(process.env.KLIO_PORT || "4518", 10);
-export const KLIO_TOKEN = process.env.KLIO_TOKEN || "dev-local";
+export const KLIO_TOKEN = await getRuntimeToken();
 export const KLIO_ALLOW_LAN = process.env.KLIO_ALLOW_LAN === "1";
 
 export const OLLAMA_URL = (process.env.OLLAMA_URL || "http://127.0.0.1:11434").replace(/\/+$/, "");

@@ -8,8 +8,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SESSIONS_DIR = path.join(__dirname, "..", "..", "sessions");
+import { getDataDir } from "./xdg.mjs";
+
+const SESSIONS_DIR = path.join(getDataDir(), "sessions");
 
 function slugify(title) {
   return String(title ?? "")

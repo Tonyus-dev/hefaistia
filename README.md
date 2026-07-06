@@ -84,6 +84,20 @@ contexto sai como Markdown copiável (export diário ou bloco Totalidade, ver
 `/api/context/export-daily` e `/api/context/export-totalidade` abaixo) para o
 usuário colar manualmente.
 
+## Superfície atual da Hefaístia
+
+A Hefaístia expõe apenas:
+
+- `/` — Console Visual da Forja.
+- Runtime local em `server/hefaistia.mjs`.
+- API local própria em `http://127.0.0.1:4518/api/*`.
+
+Rotas herdadas da Kaline Totalidade foram removidas deste app para reduzir peso,
+risco e confusão conceitual.
+
+A Hefaístia não é a Totalidade, não tem login próprio e não escreve na memória
+canônica. A ponte continua manual: exporta Markdown para Ká copiar e aprovar.
+
 ## Rodando localmente
 
 ```bash
@@ -617,6 +631,24 @@ Remover:
 sudo apt remove klio-hefaistia
 ```
 
+## Dados locais
+
+A Hefaístia não grava dados do usuário em `/opt`.
+
+- Configuração: `~/.config/klio-hefaistia/config.json`
+- Sessões: `~/.local/share/klio-hefaistia/sessions`
+- Logs/estado: `~/.local/state/klio-hefaistia`
+
+## Token local
+
+No modo instalado, a Hefaístia usa um token local gerado na primeira execução.
+Esse token não é empacotado no `.deb`, não é logado e não é enviado à Totalidade.
+
+## Tailscale privado
+
+O acesso por outro aparelho deve ser feito apenas via tailnet e somente por ação explícita.
+A Hefaístia não abre LAN por padrão e nunca usa `0.0.0.0` por padrão.
+
 ### Ícones
 
 `public/icon-192.png`, `public/icon-512.png` e `public/apple-touch-icon.png` reúsam
@@ -715,23 +747,9 @@ itens abaixo tinham **zero referências** fora da própria definição:
 Depois da remoção: `bun run typecheck`, `bun run lint`, `bun run build` e
 `bun run test` (55 testes) continuam passando sem erro.
 
-### O que continuou por segurança
+### O que continuou por segurança (componentes órfãos)
 
-O clone ainda carrega uma árvore grande de rotas/componentes herdados da Kaline
-Totalidade (`src/routes/_authenticated/*`, `auth.tsx`, `convite.tsx`,
-`g.$guardianId.tsx`, `portal.$token.tsx`, e os componentes que só eles usam —
-chat com IA, Kuan-Yin, Câmara do Eco, Código, Jurídico, etc.). Nenhuma dessas
-rotas é alcançável por navegação a partir da home da Hefaístia (`src/routes/
-index.tsx` → `HefaistiaConsole` não linka para nenhuma delas), mas removê-las
-significa apagar dezenas de arquivos e as dependências que ainda usam de verdade
-(`@supabase/supabase-js`, `@ai-sdk/*`, `ai`, `mammoth`, `zod`, `jszip`) — uma
-refatoração grande demais para este PR ("não fazer refatoração estética", "não
-remover se houver dúvida"). Ficam como **candidatas futuras**, não removidas
-agora. `public/installer-offline.html` e as pastas `public/agenda/`,
-`public/camara/`, etc. (mounts estáticos órfãos do deploy multi-app original)
-também ficaram de fora desta poda pelo mesmo motivo de escopo — `public/
-offline.html` e `public/sw.js` continuam em uso real (fallback do service
-worker) e não são candidatos.
+Embora as rotas herdadas da Kaline Totalidade tenham sido completamente removidas no PR #8 (o que significa que páginas como `/auth`, `/convite`, `/portal/*` etc. não existem mais), alguns componentes e arquivos auxiliares (como chat com IA, Kuan-Yin, Câmara do Eco, Código, Jurídico, etc.) ainda continuam fisicamente na pasta `src/` para evitar quebras por referências cruzadas ou remoções agressivas. Eles não são mais acessíveis por nenhuma rota e são candidatos ideais para limpeza profunda em PRs futuros. A pasta `public/` também mantém arquivos legados não utilizados que serão podados oportunamente.
 
 ### Diferença entre export diário e bloco Totalidade
 

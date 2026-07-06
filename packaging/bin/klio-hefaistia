@@ -4,11 +4,35 @@ set -euo pipefail
 URL="http://127.0.0.1:4518"
 HEALTH="$URL/api/health"
 APP_DIR="/opt/klio-hefaistia"
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/klio-hefaistia"
+CONFIG_FILE="$CONFIG_DIR/config.json"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/klio-hefaistia"
 PID_FILE="$STATE_DIR/runtime.pid"
 LOG_FILE="$STATE_DIR/runtime.log"
 
 mkdir -p "$STATE_DIR"
+
+ensure_token() {
+  if [ ! -f "$CONFIG_FILE" ]; then
+    mkdir -p "$CONFIG_DIR"
+    local token=""
+    if command -v openssl >/dev/null 2>&1; then
+      token=$(openssl rand -base64 32 | tr -d '/+' | tr -d '=')
+    elif [ -f /dev/urandom ]; then
+      token=$(head -c 32 /dev/urandom | base64 | tr -d '/+' | tr -d '=')
+    else
+      token=$(/usr/bin/node -e 'console.log(require("crypto").randomBytes(32).toString("base64url"))')
+    fi
+    echo "{\"token\": \"$token\", \"created_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}" > "$CONFIG_FILE"
+    chmod 600 "$CONFIG_FILE" || true
+  fi
+}
+
+get_token() {
+  ensure_token
+  grep -o '"token": "[^"]*' "$CONFIG_FILE" | cut -d'"' -f4
+}
 
 is_running() {
   curl -fsS --max-time 2 "$HEALTH" >/dev/null 2>&1
@@ -20,6 +44,7 @@ start_runtime() {
   fi
 
   echo "Iniciando Klio Hefaístia..."
+  ensure_token
   (
     cd "$APP_DIR"
     KLIO_HOST=127.0.0.1 \
@@ -42,18 +67,21 @@ start_runtime() {
 }
 
 open_app() {
+  local token=$(get_token)
+  local app_url="$URL/#token=$token"
+
   if command -v google-chrome >/dev/null 2>&1; then
-    exec google-chrome --app="$URL"
+    exec google-chrome --app="$app_url"
   elif command -v chromium >/dev/null 2>&1; then
-    exec chromium --app="$URL"
+    exec chromium --app="$app_url"
   elif command -v chromium-browser >/dev/null 2>&1; then
-    exec chromium-browser --app="$URL"
+    exec chromium-browser --app="$app_url"
   elif command -v brave-browser >/dev/null 2>&1; then
-    exec brave-browser --app="$URL"
+    exec brave-browser --app="$app_url"
   elif command -v microsoft-edge >/dev/null 2>&1; then
-    exec microsoft-edge --app="$URL"
+    exec microsoft-edge --app="$app_url"
   else
-    exec xdg-open "$URL"
+    exec xdg-open "$app_url"
   fi
 }
 
