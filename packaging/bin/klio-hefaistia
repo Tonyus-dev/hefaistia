@@ -5,33 +5,34 @@ URL="http://127.0.0.1:4518"
 HEALTH="$URL/api/health"
 APP_DIR="/opt/klio-hefaistia"
 
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/klio-hefaistia"
-CONFIG_FILE="$CONFIG_DIR/config.json"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/klio-hefaistia"
 PID_FILE="$STATE_DIR/runtime.pid"
 LOG_FILE="$STATE_DIR/runtime.log"
 
 mkdir -p "$STATE_DIR"
 
-ensure_token() {
-  if [ ! -f "$CONFIG_FILE" ]; then
-    mkdir -p "$CONFIG_DIR"
-    local token=""
-    if command -v openssl >/dev/null 2>&1; then
-      token=$(openssl rand -base64 32 | tr -d '/+' | tr -d '=')
-    elif [ -f /dev/urandom ]; then
-      token=$(head -c 32 /dev/urandom | base64 | tr -d '/+' | tr -d '=')
-    else
-      token=$(/usr/bin/node -e 'console.log(require("crypto").randomBytes(32).toString("base64url"))')
-    fi
-    echo "{\"token\": \"$token\", \"created_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}" > "$CONFIG_FILE"
-    chmod 600 "$CONFIG_FILE" || true
-  fi
-}
-
 get_token() {
-  ensure_token
-  grep -o '"token": "[^"]*' "$CONFIG_FILE" | cut -d'"' -f4
+  /usr/bin/node -e '
+  const fs = require("fs");
+  const path = require("path");
+  const crypto = require("crypto");
+  const home = require("os").homedir();
+  const base = process.env.XDG_CONFIG_HOME || path.join(home, ".config");
+  const dir = path.join(base, "klio-hefaistia");
+  const file = path.join(dir, "config.json");
+  try { fs.mkdirSync(dir, { recursive: true, mode: 0o700 }); } catch {}
+  try { fs.chmodSync(dir, 0o700); } catch {}
+  let token;
+  try {
+    const config = JSON.parse(fs.readFileSync(file, "utf8"));
+    token = config.token;
+  } catch {
+    token = crypto.randomBytes(32).toString("base64url");
+    fs.writeFileSync(file, JSON.stringify({ token, created_at: new Date().toISOString() }, null, 2), { mode: 0o600 });
+  }
+  try { fs.chmodSync(file, 0o600); } catch {}
+  console.log(token);
+  '
 }
 
 is_running() {
@@ -44,7 +45,7 @@ start_runtime() {
   fi
 
   echo "Iniciando Klio Hefaístia..."
-  ensure_token
+  get_token >/dev/null
   (
     cd "$APP_DIR"
     KLIO_HOST=127.0.0.1 \

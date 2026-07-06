@@ -2,13 +2,16 @@
 set -euo pipefail
 
 APP_DIR="/opt/klio-hefaistia"
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/klio-hefaistia"
-CONFIG_FILE="$CONFIG_DIR/config.json"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/klio-hefaistia"
 PID_FILE="$STATE_DIR/runtime-tailnet.pid"
 LOG_FILE="$STATE_DIR/runtime-tailnet.log"
 
 mkdir -p "$STATE_DIR"
+
+SHOW_TOKEN=false
+if [ "${1:-}" = "--show-token" ]; then
+  SHOW_TOKEN=true
+fi
 
 if ! command -v tailscale >/dev/null 2>&1; then
   echo "ERRO: Tailscale não está instalado neste sistema." >&2
@@ -21,14 +24,33 @@ if [ -z "$TAILSCALE_IP" ]; then
   exit 1
 fi
 
-if [ ! -f "$CONFIG_FILE" ]; then
-  echo "ERRO: Token local forte não existe. Inicie o app normalmente uma vez para gerá-lo." >&2
-  exit 1
-fi
+get_token() {
+  /usr/bin/node -e '
+  const fs = require("fs");
+  const path = require("path");
+  const crypto = require("crypto");
+  const home = require("os").homedir();
+  const base = process.env.XDG_CONFIG_HOME || path.join(home, ".config");
+  const dir = path.join(base, "klio-hefaistia");
+  const file = path.join(dir, "config.json");
+  try { fs.mkdirSync(dir, { recursive: true, mode: 0o700 }); } catch {}
+  try { fs.chmodSync(dir, 0o700); } catch {}
+  let token;
+  try {
+    const config = JSON.parse(fs.readFileSync(file, "utf8"));
+    token = config.token;
+  } catch {
+    token = crypto.randomBytes(32).toString("base64url");
+    fs.writeFileSync(file, JSON.stringify({ token, created_at: new Date().toISOString() }, null, 2), { mode: 0o600 });
+  }
+  try { fs.chmodSync(file, 0o600); } catch {}
+  console.log(token);
+  '
+}
 
-TOKEN=$(grep -o '"token": "[^"]*' "$CONFIG_FILE" | cut -d'"' -f4 || true)
+TOKEN=$(get_token)
 if [ -z "$TOKEN" ]; then
-  echo "ERRO: Não foi possível ler o token em $CONFIG_FILE." >&2
+  echo "ERRO: Não foi possível ler ou gerar o token." >&2
   exit 1
 fi
 
@@ -47,7 +69,13 @@ HEALTH="http://$TAILSCALE_IP:4518/api/health"
 for _ in $(seq 1 20); do
   if curl -fsS --max-time 2 "$HEALTH" >/dev/null 2>&1; then
     echo "Hefaístia iniciada na Tailnet!"
-    echo "URL de Acesso: http://$TAILSCALE_IP:4518/#token=$TOKEN"
+    if [ "$SHOW_TOKEN" = "true" ]; then
+      echo "AVISO: --show-token expõe o token localmente na saída do terminal."
+      echo "URL de Acesso: http://$TAILSCALE_IP:4518/#token=$TOKEN"
+    else
+      echo "URL de Acesso: http://$TAILSCALE_IP:4518"
+      echo "Para ver a URL completa com o token no terminal, use: klio-hefaistia-tailnet --show-token"
+    fi
     exit 0
   fi
   sleep 0.5
