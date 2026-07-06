@@ -833,6 +833,22 @@ A Hefaístia possui uma seção “Estado da Forja” para listar o funcionament
 Ela mostra estados honestos de runtime, API, token local, diretórios XDG, sessões, knowledge, Ollama, modelos, fallback, exportação manual, Tailnet e segurança de rede.
 
 A tela não executa comandos do sistema, não lê segredos, não mostra tokens e não configura Tailscale automaticamente.
+## Túnel de Kairós
+
+A Hefaístia pode importar manualmente um envelope cifrado gerado pela Totalidade em `/api/bridge/olhar-de-kairos`.
+
+O túnel:
+- não é sync automático;
+- não armazena token Supabase;
+- não escreve na Totalidade;
+- não abre LAN;
+- não inclui Kuan-Yin;
+- usa chave compartilhada local;
+- salva apenas o último snapshot em diretório XDG.
+
+Ver também:
+
+- [Guia futuro para a Totalidade](./docs/TOTALIDADE_KAIROS_TUNNEL_GUIDE.md)
 
 ## Desenvolvimento
 

@@ -114,6 +114,28 @@ export async function saveSharedKey(sharedKey) {
   await saveLocalConfig(config);
 }
 
+export function normalizeKairosPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  if (payload.snapshot && typeof payload.snapshot === "object") {
+    const normalized = { ...payload.snapshot };
+
+    if (payload.schema_version !== undefined) normalized.schema_version = payload.schema_version;
+    if (payload.snapshot_id !== undefined) normalized.snapshot_id = payload.snapshot_id;
+    if (payload.generated_at !== undefined) normalized.generated_at = payload.generated_at;
+    if (payload.source !== undefined) normalized.source = payload.source;
+    if (payload.scope !== undefined) normalized.scope = payload.scope;
+    if (payload.excludes !== undefined) normalized.excludes = payload.excludes;
+    if (payload.counts !== undefined) normalized.metadata_counts = payload.counts;
+
+    return normalized;
+  }
+
+  return payload;
+}
+
 export async function loadSnapshot() {
   try {
     const data = await fs.readFile(SNAPSHOT_FILE, "utf-8");
@@ -123,10 +145,11 @@ export async function loadSnapshot() {
   }
 }
 
-export async function saveSnapshot(snapshot) {
+export async function saveSnapshot(payload) {
   await ensureDir(KAIROS_DIR);
+  const normalized = normalizeKairosPayload(payload);
   const data = {
-    ...snapshot,
+    ...normalized,
     importedAt: new Date().toISOString(),
   };
   await fs.writeFile(SNAPSHOT_FILE, JSON.stringify(data, null, 2), "utf-8");
@@ -145,3 +168,6 @@ export async function getKairosStatus() {
     counts: getCounts(snapshot),
   };
 }
+
+export const summarizeKairosSnapshot = getCounts;
+export const renderKairosContextBlock = renderContext;
