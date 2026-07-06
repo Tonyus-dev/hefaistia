@@ -818,3 +818,11 @@ bun run hefaistia
   `/api/route-task`, `/api/models/pull`, `/api/context/export-daily`) quebrou.
 - `package.json` não perdeu nenhuma dependência que ainda esteja em uso — só as
   20 confirmadas mortas por busca de uso real.
+
+## Desenvolvimento
+
+Este repositório segue o modo Ponytail para futuras alterações por IA codificadora.
+
+Antes de implementar qualquer feature, leia:
+
+- [AGENTS.md](./AGENTS.md)
