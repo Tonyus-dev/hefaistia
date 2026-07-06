@@ -11,6 +11,7 @@ import { SessionPanel } from "@/components/hefaistia/SessionPanel";
 import { SettingsPanel } from "@/components/hefaistia/SettingsPanel";
 import { StatusPanel } from "@/components/hefaistia/StatusPanel";
 import { SystemMapPanel } from "@/components/hefaistia/SystemMapPanel";
+import { KairosTunnelPanel } from "@/components/hefaistia/KairosTunnelPanel";
 import {
   createHefaistiaClient,
   isHefaistiaError,
@@ -161,6 +162,7 @@ export function HefaistiaConsole() {
               token={token}
               selectedModel={selectedModel}
             />
+            <KairosTunnelPanel client={client} />
             <SessionPanel client={client} />
             <SettingsPanel
               apiUrl={apiUrl}

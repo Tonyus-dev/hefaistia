@@ -3,6 +3,7 @@
 
 import { KLIO_LOCAL_MODEL, OLLAMA_URL, INFERENCE_TIMEOUT_MS } from "./config.mjs";
 import { fetchWithTimeout, buildMetrics } from "./http.mjs";
+import { loadSnapshot, renderContext } from "./kairos-store.mjs";
 
 export const KLIO_CHAT_MODES = [
   "operational",
@@ -53,6 +54,9 @@ function buildUserMessage({ message, mode, context }) {
       lines.push("", "Notas:");
       for (const note of context.notes) lines.push(`- ${note}`);
     }
+    if (context.kairos) {
+      lines.push("", context.kairos);
+    }
   }
 
   return lines.join("\n");
@@ -64,6 +68,13 @@ function buildUserMessage({ message, mode, context }) {
 export async function callKlioLocal({ message, model, mode, context }, knowledgeText) {
   const resolvedModel = model?.trim() || KLIO_LOCAL_MODEL;
   const resolvedMode = mode?.trim() || "operational";
+
+  const snapshot = await loadSnapshot();
+  const kairosContext = renderContext(snapshot);
+  const resolvedContext = { ...context };
+  if (kairosContext) {
+    resolvedContext.kairos = kairosContext;
+  }
 
   let upstream;
   try {
@@ -77,7 +88,10 @@ export async function callKlioLocal({ message, model, mode, context }, knowledge
           stream: false,
           messages: [
             { role: "system", content: buildKlioLocalSystemPrompt(knowledgeText) },
-            { role: "user", content: buildUserMessage({ message, mode: resolvedMode, context }) },
+            {
+              role: "user",
+              content: buildUserMessage({ message, mode: resolvedMode, context: resolvedContext }),
+            },
           ],
           options: { temperature: 0.2 },
         }),

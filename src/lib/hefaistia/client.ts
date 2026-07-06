@@ -23,6 +23,10 @@ import type {
   TotalidadeExportResult,
   SystemPaths,
   SessionsStatus,
+  KairosStatus,
+  KairosEnvelope,
+  ImportKairosEnvelopeResult,
+  KairosContextResult,
 } from "./types";
 
 export interface HefaistiaClientConfig {
@@ -193,6 +197,22 @@ export function createHefaistiaClient(config: HefaistiaClientConfig) {
     getSystemPaths: () => request<SystemPaths>(config, "/api/system/paths"),
 
     getSessionsStatus: () => request<SessionsStatus>(config, "/api/sessions/status"),
+
+    getKairosStatus: () => request<KairosStatus>(config, "/api/kairos/status"),
+
+    saveKairosConfig: (sharedKey: string) =>
+      request<{ ok: boolean; configured: boolean }>(config, "/api/kairos/config", {
+        method: "POST",
+        body: { sharedKey },
+      }),
+
+    importKairosEnvelope: (envelope: KairosEnvelope) =>
+      request<ImportKairosEnvelopeResult>(config, "/api/kairos/import-envelope", {
+        method: "POST",
+        body: { envelope },
+      }),
+
+    getKairosContext: () => request<KairosContextResult>(config, "/api/kairos/context"),
   };
 }
 

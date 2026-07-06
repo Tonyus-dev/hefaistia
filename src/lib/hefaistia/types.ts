@@ -237,3 +237,35 @@ export interface SessionsStatus {
   sessionsDir: string;
   count: number;
 }
+
+export interface KairosCounts {
+  identidade: number;
+  sedimentos: number;
+  reunioes: number;
+  mensagens: number;
+}
+
+export interface KairosStatus {
+  ok: boolean;
+  configured: boolean;
+  hasSnapshot: boolean;
+  lastImportedAt: string | null;
+  counts: KairosCounts;
+}
+
+export interface KairosEnvelope {
+  v: number;
+  iv: string;
+  data: string;
+}
+
+export interface ImportKairosEnvelopeResult {
+  ok: boolean;
+  importedAt: string;
+  counts: KairosCounts;
+}
+
+export interface KairosContextResult {
+  ok: boolean;
+  context: string;
+}

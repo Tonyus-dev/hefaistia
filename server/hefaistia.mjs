@@ -45,6 +45,16 @@ import { decideRoute } from "./lib/task-router.mjs";
 import { buildDailyExportMarkdown, buildTotalidadeExportMarkdown } from "./lib/daily-export.mjs";
 import { createSession, getSessionsStatus } from "./lib/sessions.mjs";
 import { getConfigDir, getDataDir, getStateDir } from "./lib/xdg.mjs";
+import { decryptKairosEnvelope } from "./lib/kairos-crypto.mjs";
+import {
+  getSharedKey,
+  saveSharedKey,
+  saveSnapshot,
+  loadSnapshot,
+  getKairosStatus,
+  renderContext,
+  getCounts,
+} from "./lib/kairos-store.mjs";
 
 enforceLanSafety();
 
@@ -672,6 +682,93 @@ async function handleSessionsStatus(req, res) {
   }
 }
 
+async function handleKairosConfig(req, res) {
+  const body = await readJsonBody(req, res);
+  if (body === undefined) return;
+
+  if (typeof body.sharedKey !== "string" || !body.sharedKey.trim()) {
+    sendJson(
+      res,
+      400,
+      errorPayload("BAD_REQUEST", "sharedKey é obrigatório e deve ser uma string não vazia."),
+    );
+    return;
+  }
+
+  try {
+    await saveSharedKey(body.sharedKey.trim());
+    sendJson(res, 200, { ok: true, configured: true });
+  } catch (err) {
+    console.error("[hefaistia] erro ao salvar sharedKey:", err);
+    sendJson(res, 500, errorPayload("INTERNAL_ERROR", "Erro ao salvar sharedKey."));
+  }
+}
+
+async function handleKairosImportEnvelope(req, res) {
+  const body = await readJsonBody(req, res);
+  if (body === undefined) return;
+
+  const sharedKey = await getSharedKey();
+  if (!sharedKey) {
+    sendJson(res, 400, errorPayload("BAD_REQUEST", "sharedKey não configurada."));
+    return;
+  }
+
+  const envelope = body.envelope;
+  if (
+    !envelope ||
+    envelope.v !== 1 ||
+    typeof envelope.iv !== "string" ||
+    typeof envelope.data !== "string"
+  ) {
+    sendJson(
+      res,
+      400,
+      errorPayload("BAD_REQUEST", "Envelope inválido (deve conter v=1, iv e data)."),
+    );
+    return;
+  }
+
+  try {
+    const decrypted = decryptKairosEnvelope(sharedKey, envelope);
+    if (!decrypted || typeof decrypted !== "object") {
+      sendJson(res, 400, errorPayload("BAD_REQUEST", "Snapshot decifrado é inválido."));
+      return;
+    }
+
+    const saved = await saveSnapshot(decrypted);
+    sendJson(res, 200, {
+      ok: true,
+      importedAt: saved.importedAt,
+      counts: getCounts(saved),
+    });
+  } catch (err) {
+    console.error("[hefaistia] erro ao importar envelope:", err);
+    sendJson(res, 400, errorPayload("BAD_REQUEST", err.message));
+  }
+}
+
+async function handleKairosStatus(req, res) {
+  try {
+    const status = await getKairosStatus();
+    sendJson(res, 200, status);
+  } catch (err) {
+    console.error("[hefaistia] erro ao obter status kairós:", err);
+    sendJson(res, 500, errorPayload("INTERNAL_ERROR", "Erro ao obter status."));
+  }
+}
+
+async function handleKairosContext(req, res) {
+  try {
+    const snapshot = await loadSnapshot();
+    const context = renderContext(snapshot);
+    sendJson(res, 200, { ok: true, context });
+  } catch (err) {
+    console.error("[hefaistia] erro ao obter contexto kairós:", err);
+    sendJson(res, 500, errorPayload("INTERNAL_ERROR", "Erro ao renderizar contexto."));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Roteamento
 // ---------------------------------------------------------------------------
@@ -684,6 +781,10 @@ const ROUTES = [
   { method: "POST", path: "/api/benchmark", handler: handleBenchmark },
   { method: "POST", path: "/api/tasks", handler: handleTasks },
   { method: "GET", path: "/api/knowledge", handler: handleKnowledge },
+  { method: "POST", path: "/api/kairos/config", handler: handleKairosConfig },
+  { method: "POST", path: "/api/kairos/import-envelope", handler: handleKairosImportEnvelope },
+  { method: "GET", path: "/api/kairos/status", handler: handleKairosStatus },
+  { method: "GET", path: "/api/kairos/context", handler: handleKairosContext },
   { method: "POST", path: "/api/klio/chat", handler: handleKlioChat },
   { method: "POST", path: "/api/kaline/fallback", handler: handleKalineFallback },
   { method: "POST", path: "/api/route-task", handler: handleRouteTask },
